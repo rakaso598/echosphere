@@ -8,6 +8,18 @@
     "apps/*",
     "packages/*"
   ],
+  "scripts": {
+    "build": "yarn workspaces foreach -pt run build",
+    "build:packages": "yarn workspace @echosphere/common run build && yarn workspace @echosphere/ai-logic run build && yarn workspace @echosphere/database run build",
+    "dev:api": "yarn workspace @echosphere/api run dev",
+    "dev:discord": "yarn workspace @echosphere/discord-bot run dev",
+    "start:api": "yarn workspace @echosphere/api run start",
+    "start:discord": "yarn workspace @echosphere/discord-bot run start",
+    "install:all": "yarn install",
+    "clean": "yarn workspaces foreach -pt exec rm -rf dist node_modules",
+    "test": "yarn workspaces foreach -pt run test",
+    "deploy:discord": "yarn workspace @echosphere/discord-bot run deploy"
+  },
   "devDependencies": {
     "typescript": "^5.9.2"
   }
