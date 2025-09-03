@@ -21,6 +21,11 @@
     "deploy:discord": "yarn workspace @echosphere/discord-bot run deploy"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.1.3",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.1",
     "typescript": "^5.9.2"
   }
 }
