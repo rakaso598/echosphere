@@ -1,8 +1,20 @@
 # EchoSphere
 
+<img width="600" alt="logo" src="docs/img/echosphere_logo.png" />
+
+> **EchoSphere 개발 의도 및 비즈니스 가치**  
+> 크리에이터와 MCN 환경에서 발생하는 다양한 커뮤니티 활동, 이슈, 팬덤 반응을 AI 기반으로 실시간 분석·모니터링하여,  
+> 크리에이터와 매니저가 더 효율적으로 소통하고 전략을 수립할 수 있도록 돕는 것을 목표로 합니다.  
+>  
+> - 정량적 데이터의 한계를 넘어, 댓글·게시글 등 비정형 텍스트 데이터를 AI가 분석하여 정성적 인사이트를 제공합니다.  
+> - 위험 감지 및 경향성 분석을 통해, 선제적 대응과 효율적 팬덤 관리가 가능하도록 지원합니다.  
+> - MCN/크리에이터 실무 환경에 최적화된 봇 형태(Discord/Slack) 및 자동 보고서 기능을 제공합니다.
+
+---
+
 AI 기반 커뮤니티 분석 및 실시간 위험 감지 솔루션
 
-<img width="600" alt="logo" src="docs/img/echosphere_logo.png" />
+<img width="250" alt="logo" src="docs/img/echosphere_logo.png" />
 
 ---
 
