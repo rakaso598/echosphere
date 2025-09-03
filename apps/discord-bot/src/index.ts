@@ -2,8 +2,25 @@ import { Client, GatewayIntentBits, Collection } from 'discord.js';
 import { reportCommand } from './commands/report.command';
 import { readyEvent } from './events/ready.event';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 dotenv.config();
+
+// 환경변수 검증 스키마 정의
+const EnvSchema = z.object({
+  DISCORD_TOKEN: z.string().min(10),
+  DISCORD_CLIENT_ID: z.string().min(10),
+  DISCORD_GUILD_ID: z.string().min(10),
+  API_BASE_URL: z.string().url().optional(),
+  DISCORD_WEBHOOK_URL: z.string().url().optional(),
+});
+
+// 환경변수 검증
+const envParse = EnvSchema.safeParse(process.env);
+if (!envParse.success) {
+  console.error('환경변수 검증 실패:', envParse.error.issues);
+  process.exit(1);
+}
 
 // Discord 클라이언트 생성
 const client = new Client({

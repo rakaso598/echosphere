@@ -1,6 +1,9 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { createSentimentAnalyzer } from '@echosphere/ai-logic';
 import { getSentimentEmoji, calculateConfidenceLevel } from '@echosphere/common';
+import { z } from 'zod';
+
+const MessageSchema = z.object({ message: z.string().min(1) });
 
 export const reportCommand = {
   data: new SlashCommandBuilder()
@@ -15,9 +18,9 @@ export const reportCommand = {
   async execute(interaction: ChatInputCommandInteraction) {
     try {
       const message = interaction.options.getString('message');
-
-      if (!message) {
-        await interaction.reply('메시지를 입력해주세요.');
+      const parseResult = MessageSchema.safeParse({ message });
+      if (!parseResult.success) {
+        await interaction.reply('메시지 입력값이 올바르지 않습니다.');
         return;
       }
 

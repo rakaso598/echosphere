@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 // Common types used across the application
 export interface BaseResponse<T = any> {
   success: boolean;
@@ -37,8 +39,8 @@ export interface AnalysisResult {
   emotions?: string[];
   keywords?: string[];
   source: 'discord' | 'slack' | 'api';
-  userId: string | undefined;
-  channelId: string | undefined;
+  userId?: string;
+  channelId?: string;
   createdAt: Date;
 }
 
@@ -79,3 +81,44 @@ export class InternalServerError extends EchoSphereError {
     super(message, 'INTERNAL_SERVER_ERROR', 500);
   }
 }
+
+export const BaseResponseSchema = z.object({
+  success: z.boolean(),
+  data: z.any().optional(),
+  error: z.string().optional(),
+  message: z.string().optional(),
+});
+
+export const PaginationParamsSchema = z.object({
+  page: z.number().optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+});
+
+export const PaginationResultSchema = z.object({
+  items: z.array(z.any()),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+  totalPages: z.number(),
+});
+
+export const AnalysisRequestSchema = z.object({
+  message: z.string().min(1),
+  source: z.enum(['discord', 'slack', 'api']),
+  userId: z.string().optional(),
+  channelId: z.string().optional(),
+});
+
+export const AnalysisResultSchema = z.object({
+  id: z.string(),
+  message: z.string().min(1),
+  sentiment: z.enum(['positive', 'negative', 'neutral']),
+  confidence: z.number().min(0).max(1),
+  reasoning: z.string().optional(),
+  emotions: z.array(z.string()).optional(),
+  keywords: z.array(z.string()).optional(),
+  source: z.enum(['discord', 'slack', 'api']),
+  userId: z.string().optional(),
+  channelId: z.string().optional(),
+});

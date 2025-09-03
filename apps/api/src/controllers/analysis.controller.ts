@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
 import { AnalysisService } from '../services/analysis.service';
 import { AnalysisRequest, BaseResponse, ValidationError } from '@echosphere/common';
+import { z } from 'zod';
+
+const AnalysisRequestSchema = z.object({
+  message: z.string().min(1),
+  source: z.enum(['discord', 'slack', 'api']).default('api'),
+  userId: z.string(),
+  channelId: z.string(),
+});
 
 export class AnalysisController {
   private analysisService: AnalysisService;
@@ -11,23 +19,14 @@ export class AnalysisController {
 
   public async analyzeMessage(req: Request, res: Response): Promise<void> {
     try {
-      const { message, source = 'api', userId, channelId } = req.body;
-
-      if (!message) {
-        const response: BaseResponse = {
-          success: false,
-          error: 'Message is required'
-        };
-        res.status(400).json(response);
+      const parseResult = AnalysisRequestSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        res.status(400).json({ success: false, error: '입력값 검증 실패', details: parseResult.error.issues });
         return;
       }
+      const request = parseResult.data;
 
-      const request: AnalysisRequest = {
-        message,
-        source,
-        userId,
-        channelId
-      };
+      const { message, source = 'api', userId, channelId } = request;
 
       const result = await this.analysisService.analyzeMessage(request);
 

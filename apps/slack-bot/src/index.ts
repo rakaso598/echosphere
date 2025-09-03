@@ -4,9 +4,22 @@ dotenv.config();
 
 import { handleReportCommand } from './report.command';
 import { WebClient } from '@slack/web-api';
+import { z } from 'zod';
 
 const slackToken = process.env.SLACK_BOT_TOKEN;
 const web = new WebClient(slackToken);
+
+const EnvSchema = z.object({
+  SLACK_BOT_TOKEN: z.string().min(10),
+  SLACK_SIGNING_SECRET: z.string().min(10),
+  API_BASE_URL: z.string().url().optional(),
+  SLACK_WEBHOOK_URL: z.string().url().optional(),
+});
+const envParse = EnvSchema.safeParse(process.env);
+if (!envParse.success) {
+  console.error('환경변수 검증 실패:', envParse.error.issues);
+  process.exit(1);
+}
 
 // 슬랙 이벤트 핸들러 예시 (실제 구현은 Slack Events API 또는 Bolt 사용 권장)
 async function onMessage(event: any) {

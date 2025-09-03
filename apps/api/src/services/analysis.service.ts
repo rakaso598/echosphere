@@ -1,6 +1,7 @@
 import { ReportRepository } from '../repositories/report.repository';
 import { createSentimentAnalyzer } from '@echosphere/ai-logic';
 import { AnalysisResult, AnalysisRequest } from '@echosphere/common';
+import { ReportSchema, CreateReportInputSchema } from '@echosphere/database/src/models/report.model';
 
 export class AnalysisService {
   private reportRepository: ReportRepository;
@@ -20,6 +21,12 @@ export class AnalysisService {
 
   public async analyzeMessage(request: AnalysisRequest): Promise<AnalysisResult> {
     try {
+      // 입력값 검증
+      const parseResult = CreateReportInputSchema.safeParse(request);
+      if (!parseResult.success) {
+        throw new Error('서비스 입력값 검증 실패: ' + JSON.stringify(parseResult.error.issues));
+      }
+
       // AI 분석 로직 실행 (packages/ai-logic 사용)
       const sentimentResult = await this.sentimentAnalyzer.analyze(request.message);
 
@@ -40,7 +47,21 @@ export class AnalysisService {
       // 결과를 데이터베이스에 저장
       const savedResult = await this.reportRepository.saveReport(analysisResult);
 
-      return savedResult;
+      // 출력값 검증
+      const outputResult = ReportSchema.safeParse(savedResult);
+      if (!outputResult.success) {
+        throw new Error('서비스 출력값 검증 실패: ' + JSON.stringify(outputResult.error.issues));
+      }
+
+      // 타입 오류 방지: optional 필드 undefined → ''
+      const output = outputResult.data;
+      return {
+        ...output,
+        reasoning: output.reasoning ?? '',
+        userId: output.userId ?? '',
+        channelId: output.channelId ?? '',
+        emotions: output.emotions ?? [],
+      };
     } catch (error) {
       console.error('Analysis service error:', error);
       throw error;
@@ -49,7 +70,9 @@ export class AnalysisService {
 
   public async getReports(): Promise<any[]> {
     try {
-      return await this.reportRepository.getAllReports();
+      const reports = await this.reportRepository.getAllReports();
+      // 출력값 검증
+      return reports.filter(r => ReportSchema.safeParse(r).success);
     } catch (error) {
       console.error('Get reports service error:', error);
       throw error;
@@ -58,7 +81,12 @@ export class AnalysisService {
 
   public async getReportById(id: string): Promise<any> {
     try {
-      return await this.reportRepository.getReportById(id);
+      const report = await this.reportRepository.getReportById(id);
+      // 출력값 검증
+      if (report && !ReportSchema.safeParse(report).success) {
+        throw new Error('서비스 단일 보고서 출력값 검증 실패');
+      }
+      return report;
     } catch (error) {
       console.error('Get report by ID service error:', error);
       throw error;

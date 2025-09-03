@@ -4,9 +4,26 @@ import apiRoutes from './routes/api.routes';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { check, validationResult } from 'express-validator';
+import { z } from 'zod';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 환경변수 검증
+const EnvSchema = z.object({
+  GEMINI_API_KEY: z.string().min(10),
+  DATABASE_URL: z.string().url(),
+  PORT: z.string().regex(/^\d+$/).optional(),
+  NODE_ENV: z.enum(['development', 'production', 'test']).optional(),
+  DISCORD_WEBHOOK_URL: z.string().url().optional(),
+  SLACK_WEBHOOK_URL: z.string().url().optional(),
+});
+
+const envParse = EnvSchema.safeParse(process.env);
+if (!envParse.success) {
+  console.error('환경변수 검증 실패:', envParse.error.issues);
+  process.exit(1);
+}
 
 // 미들웨어 설정
 app.use(cors());

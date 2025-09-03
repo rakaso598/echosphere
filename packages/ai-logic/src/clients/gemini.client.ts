@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface GeminiConfig {
   apiKey: string;
   model?: string;
@@ -7,6 +9,11 @@ export interface GeminiResponse {
   text: string;
   confidence: number;
 }
+
+export const GeminiResponseSchema = z.object({
+  text: z.string(),
+  confidence: z.number().min(0).max(1),
+});
 
 export class GeminiClient {
   private apiKey: string;
@@ -40,18 +47,13 @@ export class GeminiClient {
           }),
         }
       );
-
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
-      }
-
       const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-      return {
-        text,
-        confidence: 0.85, // TODO: 실제 신뢰도 계산 로직 구현
-      };
+      // Zod 검증
+      const parseResult = GeminiResponseSchema.safeParse(data);
+      if (!parseResult.success) {
+        throw new Error('Gemini API 응답 검증 실패: ' + JSON.stringify(parseResult.error.issues));
+      }
+      return parseResult.data;
     } catch (error) {
       console.error('Gemini client error:', error);
       throw error;

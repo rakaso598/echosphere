@@ -1,12 +1,21 @@
 import { WebClient } from '@slack/web-api';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 dotenv.config();
 
 const slackToken = process.env.SLACK_BOT_TOKEN;
 const apiUrl = process.env.API_BASE_URL || 'http://localhost:3000';
 const web = new WebClient(slackToken);
 
+const MessageSchema = z.object({ message: z.string().min(1) });
+
 export async function handleReportCommand(channel: string, message: string) {
+  const parseResult = MessageSchema.safeParse({ message });
+  if (!parseResult.success) {
+    await web.chat.postMessage({ channel, text: '메시지 입력값이 올바르지 않습니다.' });
+    return;
+  }
+
   // API 서버에 분석 요청
   const response = await fetch(`${apiUrl}/api/analyze`, {
     method: 'POST',
