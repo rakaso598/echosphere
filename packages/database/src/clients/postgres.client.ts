@@ -174,6 +174,19 @@ export class PostgresClient {
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
+  public async getRecentReports(limit: number): Promise<Report[]> {
+    const client = await this.pool.connect();
+    try {
+      const res = await client.query(
+        'SELECT * FROM reports ORDER BY created_at DESC LIMIT $1',
+        [limit]
+      );
+      return res.rows;
+    } finally {
+      client.release();
+    }
+  }
+
   private mapRowToReport(row: any): Report {
     return {
       id: row.id.toString(),

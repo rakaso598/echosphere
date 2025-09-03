@@ -53,4 +53,14 @@ export class ReportRepository {
       throw error;
     }
   }
+
+  public async getRecentReports(limit: number): Promise<any[]> {
+    try {
+      // Database 패키지의 PostgresClient에 getRecentReports가 있다고 가정
+      return await this.dbClient.getRecentReports(limit);
+    } catch (error) {
+      console.error('Get recent reports error:', error);
+      throw error;
+    }
+  }
 }
