@@ -1,4 +1,4 @@
-# EchoSphere
+# EchoSphere - AI 기반 커뮤니티 인사이트 & 실시간 위험 감지 플랫폼
 
 <img width="250" alt="logo" src="docs/img/echosphere_logo.png" />
 
@@ -9,12 +9,6 @@
 > - 정량적 데이터의 한계를 넘어, 댓글·게시글 등 비정형 텍스트 데이터를 AI가 분석하여 정성적 인사이트를 제공합니다.  
 > - 위험 감지 및 경향성 분석을 통해, 선제적 대응과 효율적 팬덤 관리가 가능하도록 지원합니다.  
 > - MCN/크리에이터 실무 환경에 최적화된 봇 형태(Discord/Slack) 및 자동 보고서 기능을 제공합니다.
-
----
-
-AI 기반 커뮤니티 분석 및 실시간 위험 감지 솔루션
-
-<img width="250" alt="logo" src="docs/img/echosphere_logo.png" />
 
 ---
 
