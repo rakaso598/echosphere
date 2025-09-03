@@ -97,8 +97,8 @@ EchoSphere는 MCN, 브랜드, 커뮤니티 운영자를 위한 **AI 기반 커�
 ## 🤝 기여 및 문의
 
 - **기여 방법**: Fork & PR, Issue 등록, `/docs/publish-guide.md` 참고
-- **문의/연락처**: [your-email@example.com]
-- **포트폴리오/GitHub**: [https://github.com/your-org]
+- **문의/연락처**: [namul9416@gmail.com]
+- **포트폴리오/GitHub**: [https://github.com/rakaso598]
 
 ---
 
