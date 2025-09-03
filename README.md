@@ -1,4 +1,4 @@
-# EchoSphere - AI 기반 커뮤니티 인사이트 & 실시간 위험 감지 플랫폼
+# EchoSphere - MCN/크리에이터를 위한 AI 커뮤니티 분석 및 경향성 모니터링
 
 <img width="250" alt="logo" src="docs/img/echosphere_logo.png" />
 
