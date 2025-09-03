@@ -1,6 +1,6 @@
 # EchoSphere
 
-<img width="600" alt="logo" src="docs/img/echosphere_logo.png" />
+<img width="250" alt="logo" src="docs/img/echosphere_logo.png" />
 
 > **EchoSphere 개발 의도 및 비즈니스 가치**  
 > 크리에이터와 MCN 환경에서 발생하는 다양한 커뮤니티 활동, 이슈, 팬덤 반응을 AI 기반으로 실시간 분석·모니터링하여,  
