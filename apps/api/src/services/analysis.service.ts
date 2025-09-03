@@ -55,4 +55,13 @@ export class AnalysisService {
       throw error;
     }
   }
+
+  public async getReportById(id: string): Promise<any> {
+    try {
+      return await this.reportRepository.getReportById(id);
+    } catch (error) {
+      console.error('Get report by ID service error:', error);
+      throw error;
+    }
+  }
 }

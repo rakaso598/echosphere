@@ -14,4 +14,9 @@ router.get('/reports', (req, res) => {
   analysisController.getReports(req, res);
 });
 
+// 보고서 상세 조회 엔드포인트
+router.get('/reports/:id', (req, res) => {
+  analysisController.getReportById(req, res);
+});
+
 export default router;

@@ -65,4 +65,24 @@ export class SentimentAnalyzer {
         return 0;
     }
   }
+
+  public async extractKeywords(text: string): Promise<string[]> {
+    try {
+      const response = await this.geminiClient.extractKeywords(text);
+      return response.keywords || [];
+    } catch (error) {
+      console.error('Keyword extraction error:', error);
+      return [];
+    }
+  }
+
+  public async summarize(text: string): Promise<string> {
+    try {
+      const response = await this.geminiClient.summarize(text);
+      return response.summary || '';
+    } catch (error) {
+      console.error('Summarization error:', error);
+      return '';
+    }
+  }
 }

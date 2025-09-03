@@ -72,4 +72,26 @@ export class GeminiClient {
 
     return this.generateContent(prompt);
   }
+
+  public async extractKeywords(text: string): Promise<{ keywords: string[] }> {
+    const prompt = `다음 텍스트에서 핵심 키워드를 추출해 JSON 배열로 반환하세요: ${text}`;
+    const response = await this.generateContent(prompt);
+    try {
+      const result = JSON.parse(response.text);
+      return { keywords: result.keywords || [] };
+    } catch {
+      return { keywords: [] };
+    }
+  }
+
+  public async summarize(text: string): Promise<{ summary: string }> {
+    const prompt = `다음 텍스트를 한 문장으로 요약해 JSON으로 반환하세요: ${text}`;
+    const response = await this.generateContent(prompt);
+    try {
+      const result = JSON.parse(response.text);
+      return { summary: result.summary || '' };
+    } catch {
+      return { summary: '' };
+    }
+  }
 }

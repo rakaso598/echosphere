@@ -59,4 +59,23 @@ export class AnalysisController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  public async getReportById(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: 'Report ID is required' });
+        return;
+      }
+      const report = await this.analysisService.getReportById(id);
+      if (!report) {
+        res.status(404).json({ error: 'Report not found' });
+        return;
+      }
+      res.json(report);
+    } catch (error) {
+      console.error('Get report by ID error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
