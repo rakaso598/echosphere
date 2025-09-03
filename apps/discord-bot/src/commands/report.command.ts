@@ -23,49 +23,34 @@ export const reportCommand = {
 
       await interaction.deferReply();
 
-      // AI 분석 로직 호출 (packages/ai-logic 사용)
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        await interaction.editReply('AI 서비스가 설정되지 않았습니다.');
+      // API 서버 연동
+      const apiUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        await interaction.editReply('분석 요청에 실패했습니다.');
         return;
       }
+      const analysis = result.data;
 
-      const analyzer = createSentimentAnalyzer(apiKey);
-      const analysisResult = await analyzer.analyze(message);
-
-      const confidenceLevel = calculateConfidenceLevel(analysisResult.confidence);
-      const emoji = getSentimentEmoji(analysisResult.sentiment);
+      const confidenceLevel = calculateConfidenceLevel(analysis.confidence);
+      const emoji = getSentimentEmoji(analysis.sentiment);
 
       const embed = {
-        color: analysisResult.sentiment === 'positive' ? 0x00FF00 :
-          analysisResult.sentiment === 'negative' ? 0xFF0000 : 0xFFFF00,
-        title: `${emoji} 감정 분석 결과`,
+        color: analysis.sentiment === 'positive' ? 0x00FF00 : analysis.sentiment === 'negative' ? 0xFF0000 : 0xCCCCCC,
+        title: `감정 분석 결과 ${emoji}`,
+        description: `메시지: ${analysis.message}`,
         fields: [
-          {
-            name: '📝 메시지',
-            value: message.length > 100 ? `${message.substring(0, 100)}...` : message,
-            inline: false,
-          },
-          {
-            name: '😊 감정',
-            value: `${analysisResult.sentiment} ${emoji}`,
-            inline: true,
-          },
-          {
-            name: '🎯 신뢰도',
-            value: `${(analysisResult.confidence * 100).toFixed(1)}% (${confidenceLevel})`,
-            inline: true,
-          },
-          {
-            name: '🤔 분석 근거',
-            value: analysisResult.reasoning || '분석 근거가 제공되지 않았습니다.',
-            inline: false,
-          },
+          { name: '감정', value: analysis.sentiment, inline: true },
+          { name: '신뢰도', value: `${analysis.confidence} (${confidenceLevel})`, inline: true },
+          { name: '키워드', value: (analysis.keywords && analysis.keywords.length > 0) ? analysis.keywords.join(', ') : '-', inline: false },
+          { name: '추론', value: analysis.reasoning || '-', inline: false },
         ],
         timestamp: new Date().toISOString(),
-        footer: {
-          text: 'EchoSphere AI Analysis'
-        }
       };
 
       await interaction.editReply({ embeds: [embed] });
