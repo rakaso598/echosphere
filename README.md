@@ -2,6 +2,8 @@
 
 AI 기반 커뮤니티 분석 및 실시간 위험 감지 솔루션
 
+<img width="600" alt="logo" src="docs/img/echosphere_logo.png" />
+
 ---
 
 ## 🏢 제품/솔루션 개요
