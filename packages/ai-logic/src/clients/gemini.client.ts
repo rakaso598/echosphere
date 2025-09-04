@@ -1,77 +1,27 @@
-import { z } from 'zod';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface GeminiConfig {
   apiKey: string;
   model?: string;
 }
 
-export interface GeminiResponse {
-  text: string;
-  confidence: number;
-}
-
-export const GeminiResponseSchema = z.object({
-  text: z.string(),
-  confidence: z.number().min(0).max(1),
-});
-
 export class GeminiClient {
-  private apiKey: string;
+  private genAI: GoogleGenerativeAI;
   private model: string;
-  private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
   constructor(config: GeminiConfig) {
-    this.apiKey = config.apiKey;
-    this.model = config.model || 'gemini-pro';
+    this.genAI = new GoogleGenerativeAI(config.apiKey);
+    this.model = process.env.GEMINI_MODEL || config.model || 'gemini-2.5-flash';
   }
 
-  public async generateContent(prompt: string): Promise<GeminiResponse> {
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt,
-                  },
-                ],
-              },
-            ],
-          }),
-        }
-      );
-      const data = await response.json();
-      // Zod 검증
-      const parseResult = GeminiResponseSchema.safeParse(data);
-      if (!parseResult.success) {
-        throw new Error('Gemini API 응답 검증 실패: ' + JSON.stringify(parseResult.error.issues));
-      }
-      return parseResult.data;
-    } catch (error) {
-      console.error('Gemini client error:', error);
-      throw error;
-    }
+  public async generateContent(prompt: string): Promise<{ text: string }> {
+    const model = this.genAI.getGenerativeModel({ model: this.model });
+    const result = await model.generateContent(prompt);
+    return { text: result.response.text() };
   }
 
-  public async analyzeSentiment(text: string): Promise<GeminiResponse> {
-    const prompt = `
-다음 텍스트의 감정을 분석해주세요. 응답은 JSON 형식으로 해주세요:
-{
-  "sentiment": "positive|negative|neutral",
-  "confidence": 0.0-1.0,
-  "reasoning": "분석 근거"
-}
-
-텍스트: "${text}"
-`;
-
+  public async analyzeSentiment(text: string): Promise<{ text: string }> {
+    const prompt = `다음 텍스트의 감정을 분석해주세요. 응답은 JSON 형식으로 해주세요:\n{\n  "sentiment": "positive|negative|neutral",\n  "confidence": 0.0-1.0,\n  "reasoning": "분석 근거"\n}\n\n텍스트: "${text}"`;
     return this.generateContent(prompt);
   }
 

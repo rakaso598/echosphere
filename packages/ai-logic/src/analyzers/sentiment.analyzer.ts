@@ -17,18 +17,24 @@ export class SentimentAnalyzer {
   public async analyze(text: string): Promise<SentimentResult> {
     try {
       const response = await this.geminiClient.analyzeSentiment(text);
-
-      // Gemini 응답을 파싱
+      console.log('Gemini response:', response);
       try {
         const result = JSON.parse(response.text);
+        console.log('Parsed result:', result);
+        const sentiment = ['positive', 'negative', 'neutral'].includes(result.sentiment)
+          ? result.sentiment
+          : 'neutral';
+        // GeminiClient의 response.confidence는 이제 없음 (SDK 기반)
+        const confidence = typeof result.confidence === 'number' && result.confidence >= 0 && result.confidence <= 1
+          ? result.confidence
+          : 0.5;
         return {
-          sentiment: result.sentiment || 'neutral',
-          confidence: result.confidence || response.confidence,
-          reasoning: result.reasoning,
+          sentiment,
+          confidence,
+          reasoning: result.reasoning || '',
           emotions: result.emotions || [],
         };
       } catch (parseError) {
-        // JSON 파싱 실패 시 기본값 반환
         console.warn('Failed to parse Gemini response:', parseError);
         return {
           sentiment: 'neutral',
@@ -38,7 +44,11 @@ export class SentimentAnalyzer {
       }
     } catch (error) {
       console.error('Sentiment analysis error:', error);
-      throw error;
+      return {
+        sentiment: 'neutral',
+        confidence: 0.5,
+        reasoning: '분석 중 오류 발생',
+      };
     }
   }
 

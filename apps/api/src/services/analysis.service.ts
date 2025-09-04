@@ -21,14 +21,9 @@ export class AnalysisService {
 
   public async analyzeMessage(request: AnalysisRequest): Promise<AnalysisResult> {
     try {
-      // 입력값 검증
-      const parseResult = CreateReportInputSchema.safeParse(request);
-      if (!parseResult.success) {
-        throw new Error('서비스 입력값 검증 실패: ' + JSON.stringify(parseResult.error.issues));
-      }
-
       // AI 분석 로직 실행 (packages/ai-logic 사용)
       const sentimentResult = await this.sentimentAnalyzer.analyze(request.message);
+      console.log('sentimentResult:', sentimentResult);
 
       const analysisResult: AnalysisResult = {
         id: '', // 저장 후 DB에서 생성된 ID가 할당됨
@@ -43,6 +38,12 @@ export class AnalysisService {
         channelId: request.channelId,
         createdAt: new Date(),
       };
+
+      // 분석 결과 객체에 대해 입력값 검증
+      const parseResult = CreateReportInputSchema.safeParse(analysisResult);
+      if (!parseResult.success) {
+        throw new Error('서비스 입력값 검증 실패: ' + JSON.stringify(parseResult.error.issues));
+      }
 
       // 결과를 데이터베이스에 저장
       const savedResult = await this.reportRepository.saveReport(analysisResult);
