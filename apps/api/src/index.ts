@@ -1,5 +1,6 @@
+import path from 'path';
 import dotenv from 'dotenv';
-dotenv.config({ path: './apps/api/.env' });
+dotenv.config({ path: path.resolve(process.cwd(), 'apps/api/.env') });
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
