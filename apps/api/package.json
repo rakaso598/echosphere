@@ -13,6 +13,7 @@
     "@echosphere/ai-logic": "*",
     "@echosphere/common": "*",
     "@echosphere/database": "*",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.15.0",
     "@slack/web-api": "^7.10.0",
     "cors": "^2.8.5",
