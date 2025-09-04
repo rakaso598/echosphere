@@ -1,28 +1,8 @@
-import { Client, GatewayIntentBits, Collection } from 'discord.js';
-import { reportCommand } from './commands/report.command';
-import { readyEvent } from './events/ready.event';
 import dotenv from 'dotenv';
-import { z } from 'zod';
-
 dotenv.config();
+import { Client, GatewayIntentBits } from 'discord.js';
+import axios from 'axios';
 
-// 환경변수 검증 스키마 정의
-const EnvSchema = z.object({
-  DISCORD_TOKEN: z.string().min(10),
-  DISCORD_CLIENT_ID: z.string().min(10),
-  DISCORD_GUILD_ID: z.string().min(10),
-  API_BASE_URL: z.string().url().optional(),
-  DISCORD_WEBHOOK_URL: z.string().url().optional(),
-});
-
-// 환경변수 검증
-const envParse = EnvSchema.safeParse(process.env);
-if (!envParse.success) {
-  console.error('환경변수 검증 실패:', envParse.error.issues);
-  process.exit(1);
-}
-
-// Discord 클라이언트 생성
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -31,49 +11,71 @@ const client = new Client({
   ],
 });
 
-// 명령어 컬렉션 설정
-const commands = new Collection();
-commands.set(reportCommand.data.name, reportCommand);
+const ECHOSPHERE_API_URL = process.env.ECHOSPHERE_API_URL || 'http://localhost:3000';
 
-// 이벤트 리스너 등록
-client.once('ready', readyEvent.execute);
+client.once('ready', () => {
+  console.log(`로그인 완료! ${client.user?.tag}으로 접속했습니다.`);
+});
 
-// 인터랙션 처리
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
 
-  const command = commands.get(interaction.commandName);
-
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
+  if (message.content === '안녕') {
+    await message.channel.send('안녕하세요!');
   }
 
-  try {
-    await (command as any).execute(interaction);
-  } catch (error) {
-    console.error('Command execution error:', error);
+  if (message.content.startsWith('!분석')) {
+    const text = message.content.replace('!분석', '').trim();
+    try {
+      const response = await axios.post(`${ECHOSPHERE_API_URL}/api/analyze`, {
+        message: text,
+        source: 'discord',
+        userId: message.author.id,
+        channelId: message.channel.id
+      });
+      if (response.data.success) {
+        const result = response.data.data;
+        await message.channel.send(`분석 결과: 감정=${result.sentiment}, 신뢰도=${result.confidence}`);
+        if (result.sentiment === 'negative' && result.confidence > 0.8) {
+          await message.channel.send('⚠️ 위험도가 높으니 주의하세요!');
+        }
+      } else {
+        await message.channel.send('분석 실패: ' + response.data.error);
+      }
+    } catch (err) {
+      await message.channel.send('API 요청 중 오류 발생!');
+    }
+  }
 
-    const reply = {
-      content: '명령어 실행 중 오류가 발생했습니다.',
-      ephemeral: true,
-    };
+  if (message.content === '!리포트목록') {
+    try {
+      const response = await axios.get(`${ECHOSPHERE_API_URL}/api/reports`);
+      const reports = response.data;
+      if (Array.isArray(reports) && reports.length > 0) {
+        const first = reports[0];
+        await message.channel.send(`최근 리포트: 감정=${first.sentiment}, 내용=${first.message}`);
+      } else {
+        await message.channel.send('저장된 리포트가 없습니다.');
+      }
+    } catch (err) {
+      await message.channel.send('API 요청 중 오류 발생!');
+    }
+  }
 
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(reply);
-    } else {
-      await interaction.reply(reply);
+  if (message.content.startsWith('!리포트 ')) {
+    const id = message.content.replace('!리포트', '').trim();
+    try {
+      const response = await axios.get(`${ECHOSPHERE_API_URL}/api/reports/${id}`);
+      const report = response.data;
+      if (report) {
+        await message.channel.send(`리포트: 감정=${report.sentiment}, 내용=${report.message}`);
+      } else {
+        await message.channel.send('리포트를 찾을 수 없습니다.');
+      }
+    } catch (err) {
+      await message.channel.send('API 요청 중 오류 발생!');
     }
   }
 });
 
-// 봇 로그인
-const token = process.env.DISCORD_TOKEN;
-if (!token) {
-  console.error('❌ DISCORD_TOKEN이 환경변수에 설정되지 않았습니다.');
-  process.exit(1);
-}
-
-client.login(token);
-
-export default client;
+client.login(process.env.DISCORD_TOKEN);
