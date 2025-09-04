@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: './apps/api/.env' });
+
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import apiRoutes from './routes/api.routes';
